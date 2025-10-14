@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,6 +16,10 @@ import java.util.*;
  * exceptions to align with the requirements of the BreedFetcher interface.
  */
 public class DogApiBreedFetcher implements BreedFetcher {
+    private static final String API_URL = "https://dog.ceo/api/breed";
+    private static final String STATUS_CODE = "status_code";
+    private static final String SUCCESS_CODE = "success";
+
     private final OkHttpClient client = new OkHttpClient();
 
     /**
@@ -25,11 +30,30 @@ public class DogApiBreedFetcher implements BreedFetcher {
      */
     @Override
     public List<String> getSubBreeds(String breed) {
-        // TODO Task 1: Complete this method based on its provided documentation
-        //      and the documentation for the dog.ceo API. You may find it helpful
-        //      to refer to the examples of using OkHttpClient from the last lab,
-        //      as well as the code for parsing JSON responses.
-        // return statement included so that the starter code can compile and run.
-        return new ArrayList<>();
+        ArrayList<String> subBreedList = new ArrayList<String>();
+
+        final Request request = new Request.Builder()
+                .url(String.format("%s/%s/list", API_URL, breed))
+                .build();
+
+        try {
+            final Response response = client.newCall(request).execute();
+            final JSONObject responseBody = new JSONObject(response.body().string());
+
+            if (responseBody.getString(STATUS_CODE).equals(SUCCESS_CODE)) {
+                final JSONArray list = responseBody.getJSONArray("message");
+
+                for (int i = 0; i < list.length(); i++) {
+                    String subBreed = list.getString(i);
+                    subBreedList.add(subBreed);
+                }
+            }
+
+        }
+        catch (IOException | JSONException e) {
+            throw new BreedNotFoundException(breed);
+        }
+
+        return subBreedList;
     }
 }
