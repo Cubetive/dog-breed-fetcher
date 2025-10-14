@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class DogApiBreedFetcher implements BreedFetcher {
     private static final String API_URL = "https://dog.ceo/api/breed";
-    private static final String STATUS_CODE = "status_code";
+    private static final String STATUS_CODE = "status";
     private static final String SUCCESS_CODE = "success";
 
     private final OkHttpClient client = new OkHttpClient();
@@ -29,7 +29,7 @@ public class DogApiBreedFetcher implements BreedFetcher {
      * @throws BreedNotFoundException if the breed does not exist (or if the API call fails for any reason)
      */
     @Override
-    public List<String> getSubBreeds(String breed) {
+    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
         ArrayList<String> subBreedList = new ArrayList<String>();
 
         final Request request = new Request.Builder()
@@ -47,6 +47,9 @@ public class DogApiBreedFetcher implements BreedFetcher {
                     String subBreed = list.getString(i);
                     subBreedList.add(subBreed);
                 }
+            }
+            else {
+                throw new BreedNotFoundException(breed);
             }
 
         }
